@@ -1,0 +1,4 @@
+black==25.1.0
+flake8==7.1.2
+PyMuPDF==1.25.4
+frontend==0.0.3
