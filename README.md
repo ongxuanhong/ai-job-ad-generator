@@ -1,54 +1,55 @@
 # Automated Document-Driven Advertisement Template Generator
 
-An end-to-end modular system that extracts structured text from PDF job descriptions, synthesizes job advertisement content using an LLM, and generates accompanying visual templates using Fal.ai's image generation API. The project is designed for CLI execution and structured for easy extension and maintenance.
+An end-to-end modular system that processes documents (PDF, DOCX, TXT) from a specified folder, extracts structured text, synthesizes job advertisement content using a large language model via LangChain/OpenAI, and generates a complementary visual using Fal.ai's recraft-v3 API. The final output is a structured JSON file for the job ad content and a single generated image saved at a user-specified location.
 
 ## Tech Stack
 
-- **PyMuPDF**: Used for structured text extraction from PDF files.
-- **LangChain (with OpenAI)**: Utilized for content synthesis (LLM processing) to generate structured JSON outputs from extracted text.
-- **Fal.ai**: Employed to generate job advertisement visuals using their recraft-v3 API.
+- **PyMuPDF**: For structured text extraction from PDF files.
+- **python-docx**: For reading DOCX files.
+- **Built-in Python I/O**: For handling TXT files.
+- **LangChain & OpenAI**: For LLM-based content synthesis (converting extracted text into structured JSON).
+- **Fal.ai**: For generating job advertisement visuals via the recraft-v3 API.
 - **Python**: Primary programming language.
-- **UnitTest/pytest**: For testing core functionalities.
+- **Unit Testing (pytest)**: For testing core functionalities.
 
 ## Project Structure
 
 ```
 ai_job_ad_generator/
-├── config/
-│   └── settings.yaml         # Configuration file (API keys, model parameters, etc.)
 ├── data/
-│   ├── samples/              # Sample input PDFs (e.g., job description PDFs)
-│   └── output/               # Generated outputs: extracted text (JSON), synthesized content, images
+│   ├── documents/            # Input folder containing job description files (.pdf, .docx, .txt)
+│   └── output/               # Folder for output JSON and generated images
 ├── scripts/
 │   ├── __init__.py
-│   ├── extract_text.py       # Module for PDF text extraction using PyMuPDF
-│   ├── synthesize_content.py # Module for LLM processing with LangChain & OpenAI
-│   └── generate_visual.py    # Module for generating visuals using Fal.ai's API
+│   ├── extract_text.py       # Module to extract text from PDFs, DOCX, and TXT files
+│   ├── synthesize_content.py # Module to synthesize job ad content via LangChain/OpenAI
+│   └── generate_visual.py    # Module to generate visuals using Fal.ai API
 ├── tests/                    # Unit tests for core functionalities
 │   ├── test_extract_text.py
 │   ├── test_synthesize_content.py
 │   └── test_generate_visual.py
-└── main.py                   # CLI entry point tying all modules together
+└── main.py                   # CLI entry point to execute the full pipeline
 ```
 
 ## Setup and Installation
 
 1. **Clone the Repository:**
    ```bash
-   git clone https://github.com/yourusername/ai_job_ad_generator.git
+   git clone https://github.com/ongxuanhong/ai-job-ad-generator.git
    cd ai_job_ad_generator
    ```
 
 2. **Create a Virtual Environment and Install Dependencies:**
    ```bash
    python -m venv venv
-   source venv/bin/activate  # On Windows, use: venv\Scripts\activate
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
    pip install -r requirements.txt
    ```
-   
+
    *Example `requirements.txt`:*
    ```
    pymupdf
+   python-docx
    langchain
    openai
    requests
@@ -59,66 +60,74 @@ ai_job_ad_generator/
 3. **Configuration:**
 
    - **API Keys:**  
-     Create a `.env` file or update `config/settings.yaml` with your API keys:
-     - `OPENAI_API_KEY` for OpenAI access (used in content synthesis)
-     - `FALAI_API_KEY` for Fal.ai's recraft-v3 image generation API
+     Export environment variables with your API keys:
+     - `OPENAI_API_KEY` for OpenAI access (used in content synthesis).
+     - `FAL_KEY` for Fal.ai’s recraft-v3 image generation API.
 
-   - For example, using a `.env` file:
+   - Example:
      ```
-     OPENAI_API_KEY=your_openai_api_key
-     FALAI_API_KEY=your_falai_api_key
+     export OPENAI_API_KEY=your_openai_api_key
+     export FAL_KEY=your_falai_api_key
      ```
 
 ## Usage
 
 ### CLI Execution
 
-The system is designed to run as a CLI tool. Use the main entry point `main.py` to perform the full pipeline (PDF text extraction → LLM content synthesis → Visual generation).
+The system is executed via the CLI using **main.py**. This process involves:
+
+1. **Step 1 – Extraction:**  
+   The script scans an input folder (e.g., `data/documents/`) and extracts text from all supported file types (PDF, DOCX, TXT).
+
+2. **Step 2 – Content Synthesis:**  
+   It combines the extracted text into a single context and passes it to the LLM (via LangChain/OpenAI) to generate structured job advertisement content in JSON format.
+
+3. **Step 3 – Visual Generation:**  
+   Based on the synthesized job title and summary, the script generates one final visual image using Fal.ai’s recraft-v3 API. The image is saved at the specified output path.
+
+**Run the CLI with:**
 
 ```bash
-python main.py --pdf data/samples/sample_job_description.pdf \
+python main.py --folder data/documents/ \
     --output_json data/output/generated_content.json \
     --output_image data/output/job_ad_visual.png
 ```
 
-- **`--pdf`**: Path to the input PDF file containing the job description.
-- **`--output_json`**: File path where the synthesized job ad content (JSON) will be saved.
-- **`--output_image`**: File path where the generated visual image will be saved.
+- **`--folder`**: Directory containing your input documents.
+- **`--output_json`**: File path to save the synthesized job ad content in JSON format.
+- **`--output_image`**: File path for the final generated visual image.
 
 ### Module Details
 
-- **Data Extraction & Preprocessing (`scripts/extract_text.py`)**:  
-  Uses PyMuPDF to extract and clean text from PDF files. Output is stored in JSON format.
+- **Data Extraction & Preprocessing (`scripts/extract_text.py`):**  
+  Uses PyMuPDF, python-docx, and Python’s built-in I/O to extract text from PDFs, DOCX, and TXT files. The output is a JSON structure with file names and lists of paragraphs.
 
-- **Content Synthesis (LLM Processing) (`scripts/synthesize_content.py`)**:  
-  Uses LangChain with OpenAI’s GPT (e.g., gpt-3.5-turbo) to convert extracted text into structured JSON content containing job title, summary, responsibilities, requirements, and qualifications.
+- **Content Synthesis (LLM Processing) (`scripts/synthesize_content.py`):**  
+  Utilizes LangChain with OpenAI's GPT (e.g., gpt-3.5-turbo-instruct) to transform the extracted text into structured content with keys like `job_title`, `summary`, `responsibilities`, etc. The output is in JSON format.
 
-- **Visual Template Creation (`scripts/generate_visual.py`)**:  
-  Calls the Fal.ai recraft-v3 API to generate an image based on a prompt derived from the job title and summary. The generated image is stored locally.
+- **Visual Template Creation (`scripts/generate_visual.py`):**  
+  Leverages the Fal.ai recraft-v3 API to generate an image based on a prompt (constructed from the job title and summary). The generated image is stored locally.
 
 ## Testing
 
-Unit tests are provided in the `tests/` directory. To run the tests using `pytest`:
+Unit tests are available in the **tests/** directory. To run tests using pytest:
 
 ```bash
 pytest tests/
 ```
 
-Tests cover the core functionalities for text extraction, content synthesis, and visual generation.
+Tests cover:
+- Text extraction functionality.
+- LLM-based content synthesis.
+- Visual generation process.
 
 ## Extending the Project
 
 - **Adding More File Formats:**  
-  Extend the data extraction module to handle additional file types (e.g., DOCX, HTML).
+  Extend `scripts/extract_text.py` to support additional file types as needed.
 
 - **Enhancing Content Synthesis:**  
-  Integrate more advanced LLM workflows using LlamaIndex, LangGraph, or CrewAI for improved content structuring.
+  Incorporate other LLM frameworks (e.g., LlamaIndex, LangGraph, CrewAI) for more advanced processing.
 
 - **Improving Visual Generation:**  
-  Replace the placeholder functions with direct integration of a local Stable Diffusion pipeline or additional Fal.ai features.
-
-## Acknowledgements
-
-- [PyMuPDF](https://pymupdf.readthedocs.io/) for robust PDF text extraction.
-- [LangChain](https://github.com/langchain-ai/langchain) and OpenAI for seamless LLM integration.
-- [Fal.ai](https://fal.ai/) for innovative image generation capabilities.
+  Integrate a local Stable Diffusion pipeline or additional Fal.ai functionalities to refine visual outputs.
