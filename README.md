@@ -72,9 +72,26 @@ ai_job_ad_generator/
 
 ## Usage
 
+### Streamlit Web Application
+
+The web app allows you to upload multiple documents, generate job ad content, and view a generated visual image.
+
+1. **Run the Streamlit App Locally:**
+   ```bash
+   streamlit run app.py
+   ```
+   - Upload your job description files via the UI.
+    ![Streamlit01](data/images/streamlit01.png)
+
+  - The app will extract text from the files, synthesize job ad content, and generate a visual image.
+  ![Streamlit02](data/images/streamlit02.png)
+
+  - Results (structured content and image) will be displayed on the app.
+  ![Streamlit03](data/images/streamlit03.png)
+
 ### CLI Execution
 
-The system is executed via the CLI using **main.py**. This process involves:
+Alternatively, you can run the full pipeline via the command line using **main.py**:. This process involves:
 
 1. **Step 1 – Extraction:**  
    The script scans an input folder (e.g., `data/documents/`) and extracts text from all supported file types (PDF, DOCX, TXT).
