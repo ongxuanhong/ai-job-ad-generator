@@ -1,19 +1,7 @@
 {
   "job_title": "Software Engineer Position",
-  "summary": "This position is for a software engineer responsible for developing high-quality software solutions using modern web technologies. The engineer will collaborate with cross-functional teams to design, develop, and deliver scalable applications while maintaining code integrity and organization.",
-  "responsibilities": [
-    "Develop high-quality software solutions using modern web technologies.",
-    "Collaborate with cross-functional teams to design, develop, and deliver scalable applications.",
-    "Maintain code integrity and organization."
-  ],
-  "requirements": [
-    "Bachelor's degree in Computer Science or a related field.",
-    "3+ years of experience in full-stack development.",
-    "Familiarity with Agile methodologies."
-  ],
-  "qualifications": [
-    "Bachelor's degree in Computer Science or a related field.",
-    "3+ years of experience in full-stack development.",
-    "Familiarity with Agile methodologies."
-  ]
+  "summary": "Develop high-quality software solutions using modern web technologies. Collaborate with cross-functional teams to design, develop, and deliver scalable applications. Maintain code integrity and organization.",
+  "responsibilities": "Develop high-quality software solutions using modern web technologies. Collaborate with cross-functional teams to design, develop, and deliver scalable applications. Maintain code integrity and organization.",
+  "requirements": "Bachelor\u2019s degree in Computer Science or a related field. 3+ years of experience in full-stack development. Familiarity with Agile methodologies.",
+  "qualifications": "Bachelor\u2019s degree in Computer Science or a related field. 3+ years of experience in full-stack development. Familiarity with Agile methodologies."
 }

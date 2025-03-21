@@ -1,42 +1,67 @@
 # main.py
+import os
 import argparse
-from scripts import extract_text, synthesize_content, generate_visual
+import json
+from scripts.extract_text import extract_text_from_folder
+from scripts.synthesize_content import generate_job_ad_content, save_generated_content
+from scripts.generate_visual import create_job_ad_visual
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="AI Job Ad Template Generator CLI")
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Process documents from an input folder to generate job ad content and a final visual image."
+    )
     parser.add_argument(
-        "--pdf", required=True, help="Path to the input PDF job description"
+        "--folder",
+        required=True,
+        help="Path to the input folder (e.g., data/documents/) containing PDF, DOCX, and TXT files.",
     )
     parser.add_argument(
         "--output_json",
-        default="data/output/generated_content.json",
-        help="Path to save the generated job ad content JSON",
+        required=True,
+        help="Path to the output JSON file for generated job ad content (e.g., data/output/generated_content.json).",
     )
     parser.add_argument(
         "--output_image",
-        default="data/output/job_ad_visual.png",
-        help="Path to save the generated job ad image",
+        required=True,
+        help="Path to the output image file (e.g., data/output/job_ad_visual.png).",
     )
     args = parser.parse_args()
 
-    # Step 1: Extract text from the PDF
-    text_data = extract_text.extract_text_from_pdf(args.pdf)
-    extract_text.save_text_to_json(text_data, "data/output/extracted_text.json")
-    print(f"Text extracted from {args.pdf}")
+    # Step 1: Extract text from all supported documents in the folder.
+    extracted_docs = extract_text_from_folder(args.folder)
+    print(f"Extracted text from {len(extracted_docs)} file(s).")
 
-    # Step 2: Generate structured content using LLM
-    content = synthesize_content.generate_job_ad_content(text_data)
-    synthesize_content.save_generated_content(content, args.output_json)
-    print(f"Structured content generated and saved to {args.output_json}")
+    # Step 2: Combine the text from all documents into a single context.
+    # Here we join each document's paragraphs and then join all documents together.
+    combined_text = "\n".join(
+        ["\n".join(doc.get("paragraphs", [])) for doc in extracted_docs]
+    )
+    # Prepare the input for the LLM as a dictionary.
+    text_data = {"paragraphs": [combined_text]}
 
-    # Step 3: Create a visual for the job ad
+    # Generate structured job ad content using the LLM.
+    content = generate_job_ad_content(text_data)
+    save_generated_content(content, args.output_json)
+    print(f"Generated job ad content saved to {args.output_json}")
+
+    # Step 3: Generate a visual for the job ad using the generated content.
+    # Use the job title and summary as basis for the image prompt.
     title = content.get("job_title", "Job Ad")
     summary = content.get("summary", "")
-    image_path = generate_visual.create_job_ad_visual(title, summary)
-    # If generate_visual already saves the file, use returned path; otherwise, save via PIL Image
-    print(f"Visual generated and saved to {image_path}")
+    # Create the visual; this function returns the path where the image was saved.
+    generated_image_path = create_job_ad_visual(title, summary)
 
-    print("Job advertisement template generation complete.")
-    print(
-        f"\nResults:\n- Content JSON: {args.output_json}\n- Visual Image: {image_path}"
-    )
+    # Ensure the final image is at the specified output path.
+    if os.path.abspath(generated_image_path) != os.path.abspath(args.output_image):
+        os.makedirs(os.path.dirname(args.output_image), exist_ok=True)
+        os.rename(generated_image_path, args.output_image)
+        final_image_path = args.output_image
+    else:
+        final_image_path = generated_image_path
+
+    print(f"Generated visual saved at {final_image_path}")
+
+
+if __name__ == "__main__":
+    main()
